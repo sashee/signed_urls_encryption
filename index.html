@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<script>
+		document.addEventListener("DOMContentLoaded", () => {
+			const handleFileUpload = (element, handler) => {
+				element.addEventListener("change", async (event) => {
+					const files = event.currentTarget.files;
+					if (files.length) {
+						try {
+							await handler(files[0]);
+						}catch (e) {
+							console.error(e);
+						}
+					}
+				})
+			};
+
+			const handleUpload = (encryption) => async (file) => {
+				const dataRes = await fetch(`sign_post?encryption=${encryption}`);
+				if (!dataRes.ok) {
+					throw dataRes;
+				}
+				const data = await dataRes.json();
+
+				const formData = new FormData();
+				formData.append("Content-Type", file.type);
+				Object.entries(data.fields).forEach(([k, v]) => {
+					formData.append(k, v);
+				});
+				formData.append("file", file); // must be the last one
+
+				const postRes = await fetch(data.url, {
+					method: "POST",
+					body: formData,
+				});
+
+				if (!postRes.ok) {
+					throw postRes;
+				}
+
+				location.reload();
+			};
+
+			[...document.querySelectorAll(".post")].forEach((element) => handleFileUpload(element, handleUpload(element.dataset.encryption)));
+		});
+	</script>
+	<style>
+		.images-table td:first-child {
+			max-width: 150px;
+			overflow: auto;
+			text-overflow: ellipsis;
+		}
+		.images-table td:nth-child(3) {
+			max-width: 150px;
+			overflow: auto;
+			text-overflow: ellipsis;
+		}
+		.images-table img {
+			width:200px;
+		}
+	</style>
+</head>
+<body>
+	<h2>Demo code for uploading and downloading encrypted file to/from S3</h2>
+	<p>Use the 4 file inputs to upload an encrypted file to a bucket. Each input applies a different encryption. After the upload is finished, the page reloads</p>
+	<p>SSE-S3: S3-managed "seamless encryption"</p>
+	<p>SSE-KMS (default key): KMS-managed "seamless encryption"</p>
+	<p>SSK-KSM (custom key): KMS-managed custom CMK. Needs extra permissions</p>
+	<p>SSE-C: Customer-managed keys. Must generate and handle encryption keys</p>
+	<p>You can also inspect the uploaded images</p>
+	<h2>SSE-S3</h2>
+	<input class="post" data-encryption="SSE-S3" type="file"/>
+	<h2>SSE-KMS (default key)</h2>
+	<input class="post" data-encryption="SSE-KMS-default" type="file"/>
+	<h2>SSE-KMS (custom key)</h2>
+	<input class="post" data-encryption="SSE-KMS-custom" type="file"/>
+	<h2>SSE-C</h2>
+	<input class="post" data-encryption="SSE-C" type="file"/>
+	<h2>List images</h2>
+	<table class="images-table">
+		<thead>
+			<tr>
+				<th>Key</th>
+				<th>Encryption algorithm</th>
+				<th>Encryption key</th>
+				<th>Image</th>
+			</tr>
+			<tbody>$$BUCKET_CONTENTS$$</tbody>
+		</thead>
+	</table>
+</body>
+</html>
