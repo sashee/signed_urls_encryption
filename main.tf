@@ -76,8 +76,8 @@ data "aws_iam_policy_document" "lambda_exec_role_policy" {
     actions = [
       "kms:Encrypt",
       "kms:Decrypt",
-      "kms:ReEncrypt*",
-      "kms:GenerateDataKey*",
+      "kms:ReEncrypt",
+      "kms:GenerateDataKey",
       "kms:DescribeKey",
     ]
     resources = [
