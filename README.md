@@ -25,8 +25,14 @@ It provides example code how to upload files using each of these encryption sche
 
 There are 4 file inputs where you can upload an image file. Each input uses a different encryption using presigned POST requests.
 
+![](docs/upload.png)
+
 There is a list of object uploaded to the bucket, each showing the encryption it's using and shows the image itself.
+
+![](docs/list.png)
 
 ### Destroy
 
 * ```terraform destroy```
+
+The sample image is from [https://thecatapi.com/](https://thecatapi.com/).
